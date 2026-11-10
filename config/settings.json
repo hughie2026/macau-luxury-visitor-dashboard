@@ -1,1 +1,25 @@
-
+{
+  "wiki_languages": ["en", "zh", "ja", "ko", "th", "vi", "id", "ms", "tl", "fr", "de", "ru"],
+  "wiki_start": "20190101",
+  "articles_keep": 20000,
+  "articles_publish": 5000,
+  "gdelt_markets": [
+    {"iso3": "USA", "fips": "US"}, {"iso3": "GBR", "fips": "UK"},
+    {"iso3": "CHN", "fips": "CH"}, {"iso3": "HKG", "fips": "HK"},
+    {"iso3": "TWN", "fips": "TW"}, {"iso3": "JPN", "fips": "JA"},
+    {"iso3": "KOR", "fips": "KS"}, {"iso3": "SGP", "fips": "SN"},
+    {"iso3": "MYS", "fips": "MY"}, {"iso3": "THA", "fips": "TH"},
+    {"iso3": "PHL", "fips": "RP"}, {"iso3": "IDN", "fips": "ID"},
+    {"iso3": "VNM", "fips": "VM"}, {"iso3": "IND", "fips": "IN"},
+    {"iso3": "AUS", "fips": "AS"}, {"iso3": "FRA", "fips": "FR"}
+  ],
+  "currencies": {
+    "USD": ["USA"], "JPY": ["JPN"], "KRW": ["KOR"], "CNY": ["CHN"],
+    "SGD": ["SGP"], "MYR": ["MYS"], "THB": ["THA"], "PHP": ["PHL"],
+    "IDR": ["IDN"], "INR": ["IND"], "AUD": ["AUS"], "NZD": ["NZL"],
+    "CAD": ["CAN"], "GBP": ["GBR"], "CHF": ["CHE"], "BRL": ["BRA"],
+    "MXN": ["MEX"], "ZAR": ["ZAF"], "TRY": ["TUR"], "ILS": ["ISR"],
+    "SEK": ["SWE"], "NOK": ["NOR"], "DKK": ["DNK"], "PLN": ["POL"],
+    "EUR": ["FRA", "DEU", "ITA", "ESP", "PRT", "NLD", "BEL", "AUT", "IRL", "FIN", "GRC"]
+  }
+}
