@@ -85,3 +85,11 @@ export function showError(el, err) {
   el.innerHTML = `<p class="error">${esc(err.message || err)}</p>`;
   console.error(err);
 }
+
+export function debounce(fn, ms = 250) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
+}
