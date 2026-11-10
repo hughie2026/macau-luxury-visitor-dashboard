@@ -1,1 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>數據說明｜澳門奢侈品牌 × 國際旅客</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main class="page prose">
+    <section class="card">
+      <h2>這個 Dashboard 測量什麼</h2>
+      <p>社交平台和評論網站的數據需要註冊 API，所以這裡用代理指標呈現國際旅客對澳門奢侈品牌的關注和態度：</p>
+      <ul>
+        <li><strong>關注</strong>：新聞報道強度（GDELT）、各語言維基百科瀏覽量。</li>
+        <li><strong>態度</strong>：新聞的情緒分數（GDELT tone）。</li>
+        <li><strong>討論</strong>：新聞標題的主題和高頻詞。</li>
+        <li><strong>背景</strong>：澳門統計暨普查局的旅客人次和人均購物消費、匯率、各國經濟指標。</li>
+      </ul>
+      <p>新聞代表媒體輿論，維基瀏覽量代表語言群體的興趣，兩者都不是旅客本人的評論。</p>
+    </section>
 
+    <section class="card">
+      <h2>數據來源</h2>
+      <table>
+        <thead><tr><th>來源</th><th>用途</th><th>更新</th><th>授權／引用</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://www.gdeltproject.org/">GDELT DOC 2.0 API</a></td><td>報道強度、情緒、來源國家、文章</td><td>每日</td><td>免費使用，需註明 GDELT Project</td></tr>
+          <tr><td><a href="https://wikimedia.org/api/rest_v1/">Wikimedia Pageviews API</a></td><td>各語言維基瀏覽量</td><td>每月</td><td>CC0</td></tr>
+          <tr><td><a href="https://www.dsec.gov.mo">澳門統計暨普查局</a></td><td>旅客人次、人均購物消費、口岸旅客量</td><td>手動，每月／每季</td><td>註明出處</td></tr>
+          <tr><td><a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></td><td>門店、商場、酒店、娛樂場位置</td><td>每日</td><td>© OpenStreetMap 貢獻者，ODbL</td></tr>
+          <tr><td><a href="https://frankfurter.dev/">Frankfurter</a>（歐洲央行匯率）</td><td>各貨幣兌港幣匯率</td><td>每日</td><td>免費使用</td></tr>
+          <tr><td><a href="https://data.worldbank.org/">World Bank</a></td><td>人均 GDP、出境旅遊支出和人次</td><td>每日檢查，原數據每年</td><td>CC BY 4.0</td></tr>
+          <tr><td><a href="https://www.naturalearthdata.com/">Natural Earth</a></td><td>國家邊界</td><td>一次性</td><td>公有領域</td></tr>
+          <tr><td><a href="https://openfreemap.org/">OpenFreeMap</a></td><td>澳門底圖</td><td>—</td><td>見地圖右下角</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>計算方法</h2>
+      <ul>
+        <li><strong>報道強度</strong>：GDELT 的 Volume Intensity，是相對值，適合比較不同時間和國家，不能當成文章數。每月數值是當月每日數值的平均。</li>
+        <li><strong>情緒</strong>：GDELT tone 的平均值。國家情緒只對主要市場計算，並且不分品牌。</li>
+        <li><strong>雙變量著色</strong>：報道強度和人均購物消費各自分成低、中、高三等分，再組合成 9 種顏色。</li>
+        <li><strong>匯率變化</strong>：1 單位該國貨幣可換多少港幣，與一年前比較。澳門元與港幣掛鉤，所以用港幣代替。正值表示來澳門購物變便宜。</li>
+        <li><strong>主題分類</strong>：按標題中的關鍵詞判斷，只能作粗略參考。</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>已知限制</h2>
+      <ul>
+        <li>中國內地旅客佔澳門旅客多數，但他們的討論主要在小紅書和微博，這裡沒有這些數據。</li>
+        <li>GDELT 只能查最近 3 個月，歷史數據從開始運行當天累積。文章列表每次最多取 250 篇。</li>
+        <li>品牌名稱可能與其他事物同名（例如 Hermes 也是希臘神祇和快遞公司），會帶來雜訊。</li>
+        <li>維基百科只能按語言區分，不能按國家。中文版包含所有中文變體的瀏覽量。</li>
+        <li>OSM 門店資料由志願者維護，可能不完整。</li>
+        <li>歐洲央行沒有新台幣、越南盾等匯率，這些國家沒有匯率數據。</li>
+      </ul>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+  <script type="module">
+    import { renderNav, renderFooter } from './assets/js/common.js';
+    renderNav('about.html');
+    renderFooter();
+  </script>
+</body>
+</html>
