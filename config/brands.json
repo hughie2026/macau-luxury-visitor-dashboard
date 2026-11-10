@@ -1,9 +1,16 @@
 [
-  {"id": "louis-vuitton", "name": "Louis Vuitton", "name_zh": "路易威登", "gdelt": "\"Louis Vuitton\"", "wiki_en": "Louis Vuitton", "osm": ["Louis Vuitton"]},
-  {"id": "chanel", "name": "Chanel", "name_zh": "香奈兒", "gdelt": "Chanel", "wiki_en": "Chanel", "osm": ["Chanel"]},
-  {"id": "hermes", "name": "Hermès", "name_zh": "愛馬仕", "gdelt": "Hermes", "wiki_en": "Hermès", "osm": ["Hermès", "Hermes"]},
-  {"id": "dior", "name": "Dior", "name_zh": "迪奧", "gdelt": "Dior", "wiki_en": "Dior", "osm": ["Dior"]},
-  {"id": "gucci", "name": "Gucci", "name_zh": "古馳", "gdelt": "Gucci", "wiki_en": "Gucci", "osm": ["Gucci"]},
-  {"id": "cartier", "name": "Cartier", "name_zh": "卡地亞", "gdelt": "Cartier", "wiki_en": "Cartier (jeweler)", "osm": ["Cartier"]},
-  {"id": "rolex", "name": "Rolex", "name_zh": "勞力士", "gdelt": "Rolex", "wiki_en": "Rolex", "osm": ["Rolex"]}
+  {"id": "louis-vuitton", "name": "Louis Vuitton", "name_zh": "路易威登", "gdelt": "\"Louis Vuitton\"", "wiki_en": "Louis Vuitton", "osm": ["Louis Vuitton"],
+   "aliases": ["Louis Vuitton", "路易威登", "ルイ・ヴィトン", "루이비통"]},
+  {"id": "chanel", "name": "Chanel", "name_zh": "香奈兒", "gdelt": "Chanel", "wiki_en": "Chanel", "osm": ["Chanel"],
+   "aliases": ["Chanel", "香奈兒", "香奈儿", "シャネル", "샤넬"]},
+  {"id": "hermes", "name": "Hermès", "name_zh": "愛馬仕", "gdelt": "Hermes", "wiki_en": "Hermès", "osm": ["Hermès", "Hermes"],
+   "aliases": ["Hermès", "Hermes", "愛馬仕", "爱马仕", "エルメス", "에르메스"]},
+  {"id": "dior", "name": "Dior", "name_zh": "迪奧", "gdelt": "Dior", "wiki_en": "Dior", "osm": ["Dior"],
+   "aliases": ["Dior", "迪奧", "迪奥", "ディオール", "디올"]},
+  {"id": "gucci", "name": "Gucci", "name_zh": "古馳", "gdelt": "Gucci", "wiki_en": "Gucci", "osm": ["Gucci"],
+   "aliases": ["Gucci", "古馳", "古驰", "グッチ", "구찌"]},
+  {"id": "cartier", "name": "Cartier", "name_zh": "卡地亞", "gdelt": "Cartier", "wiki_en": "Cartier (jeweler)", "osm": ["Cartier"],
+   "aliases": ["Cartier", "卡地亞", "卡地亚", "カルティエ", "까르띠에"]},
+  {"id": "rolex", "name": "Rolex", "name_zh": "勞力士", "gdelt": "Rolex", "wiki_en": "Rolex", "osm": ["Rolex"],
+   "aliases": ["Rolex", "勞力士", "劳力士", "ロレックス", "롤렉스"]}
 ]
