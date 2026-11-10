@@ -25,7 +25,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -48,6 +48,12 @@ jobs:
       - name: Static data
         timeout-minutes: 5
         run: python fetch_static.py
+
+      - name: Fetch news
+        timeout-minutes: 8
+        env:
+          NEWS_BUDGET_MIN: "6"
+        run: timeout 7m python fetch_news.py || echo "::warning::Google News 抓取失敗或超時，已保留抓到的部分"
 
       - name: Fetch sources
         if: github.event_name != 'push'
@@ -75,6 +81,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data site/data
           git diff --cached --quiet || git commit -m "data: update $(date -u +%F)"
+          git pull --rebase -X theirs origin main
           git push
 
       - uses: actions/configure-pages@v5
