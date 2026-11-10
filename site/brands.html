@@ -1,1 +1,37 @@
-
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>品牌對比｜澳門奢侈品牌 × 國際旅客</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main class="page">
+    <section class="card">
+      <h2>新聞報道強度（7 日平均）</h2>
+      <p class="hint">GDELT 的相對指數，代表「澳門 + 品牌」的報道在全球監測新聞中的佔比，不是文章數。</p>
+      <div id="chart-volume" class="chart"></div>
+    </section>
+    <section class="card">
+      <h2>新聞情緒（7 日平均）</h2>
+      <p class="hint">GDELT tone 分數，大於 0 偏正面，小於 0 偏負面。</p>
+      <div id="chart-tone" class="chart"></div>
+    </section>
+    <section class="card">
+      <h2>各語言維基百科的品牌關注佔比（近 12 個月）</h2>
+      <p class="hint">每一欄是一種語言，數字是該品牌在這種語言中佔所列品牌總瀏覽量的百分比。</p>
+      <div id="chart-wiki" class="chart tall"></div>
+    </section>
+    <section class="card">
+      <h2>維基百科每月瀏覽量</h2>
+      <label>條目 <select id="wiki-target"></select></label>
+      <div id="chart-wiki-trend" class="chart"></div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+  <script type="module" src="assets/js/brands.js"></script>
+</body>
+</html>
