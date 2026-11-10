@@ -101,3 +101,26 @@ th { color: var(--muted); font-weight: 600; }
   .map-layout { grid-template-columns: 1fr; grid-template-rows: auto 60vh; height: auto; }
   .grid-2 { grid-template-columns: 1fr; }
 }
+
+/* 討論內容頁 */
+.filters button { padding: 6px 10px; cursor: pointer; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+.kpi .label { color: var(--muted); font-size: 12px; }
+.kpi .value { font-size: 24px; font-weight: 700; margin: 4px 0; overflow-wrap: anywhere; }
+.kpi .sub { color: var(--muted); font-size: 12px; min-height: 1em; }
+.up { color: #15803d; font-weight: 600; }
+.down { color: #b91c1c; font-weight: 600; }
+.chart.short { height: 300px; }
+.item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.item:last-child { border-bottom: 0; }
+.item-meta { color: var(--muted); font-size: 12px; }
+.item-title { display: block; font-size: 15px; margin: 2px 0 4px; text-decoration: none; }
+.item-title:hover { text-decoration: underline; }
+.tag .dot { width: 8px; height: 8px; }
+.tag.market { background: #eef2ff; }
+.status { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; margin: 0 0 8px; }
+.status dt { color: var(--muted); }
+.status dd { margin: 0; }
+.empty ol { line-height: 1.8; }
+.empty code { background: #f3f4f6; padding: 0 4px; border-radius: 4px; }
