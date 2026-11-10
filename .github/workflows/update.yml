@@ -25,6 +25,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -33,6 +34,7 @@ jobs:
         working-directory: scripts
     env:
       USER_AGENT: macau-luxury-visitor-dashboard (https://github.com/${{ github.repository }})
+      PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -44,20 +46,26 @@ jobs:
       - run: pip install -r ../requirements.txt
 
       - name: Static data
+        timeout-minutes: 5
         run: python fetch_static.py
 
       - name: Fetch sources
         if: github.event_name != 'push'
+        timeout-minutes: 35
         env:
           GDELT_BACKFILL: ${{ inputs.backfill }}
+          GDELT_BUDGET_MIN: "12"
+          WIKI_BUDGET_MIN: "5"
+          OSM_BUDGET_MIN: "5"
         run: |
-          python fetch_gdelt.py      || echo "::warning::GDELT 抓取失敗"
-          python fetch_wiki.py       || echo "::warning::Wikimedia 抓取失敗"
-          python fetch_osm.py        || echo "::warning::OSM 抓取失敗"
-          python fetch_fx.py         || echo "::warning::匯率抓取失敗"
-          python fetch_worldbank.py  || echo "::warning::World Bank 抓取失敗"
+          timeout 15m python fetch_gdelt.py     || echo "::warning::GDELT 抓取失敗或超時，已保留抓到的部分"
+          timeout 6m  python fetch_wiki.py      || echo "::warning::Wikimedia 抓取失敗或超時"
+          timeout 6m  python fetch_osm.py       || echo "::warning::OSM 抓取失敗或超時"
+          timeout 2m  python fetch_fx.py        || echo "::warning::匯率抓取失敗或超時"
+          timeout 3m  python fetch_worldbank.py || echo "::warning::World Bank 抓取失敗或超時"
 
       - name: Build
+        timeout-minutes: 5
         run: python build.py
 
       - name: Commit data
