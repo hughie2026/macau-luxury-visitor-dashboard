@@ -1,7 +1,8 @@
-"""用 Overpass API 抓取澳門的品牌門店、購物中心、酒店和娛樂場（© OpenStreetMap 貢獻者，ODbL）。"""
+"""用 Overpass API 抓取澳門的品牌門店、購物中心、酒店和娛樂場（© OpenStreetMap 貢獻者，ODbL）。
+環境變數 OSM_BUDGET_MIN 是總時間上限（分鐘，預設 5）。"""
 import re
 
-from common import RAW, config, get_json, save_json
+from common import RAW, FetchError, budget_from_env, config, get_json, log, save_json
 
 ENDPOINTS = [
     "https://overpass-api.de/api/interpreter",
@@ -13,7 +14,7 @@ def build_query(brands):
     names = [n for b in brands for n in b["osm"]]
     pattern = "|".join(re.escape(n) for n in names)
     return (
-        '[out:json][timeout:90];\n'
+        '[out:json][timeout:60];\n'
         'area["ISO3166-1"="MO"]->.mo;\n'
         '(\n'
         f'  nwr["brand"~"{pattern}",i](area.mo);\n'
@@ -34,26 +35,35 @@ def match_brand(tags, brands):
     return None
 
 
+def fetch(query, deadline):
+    errors = []
+    for url in ENDPOINTS:
+        log(f"Overpass：{url}")
+        try:
+            result = get_json(url, data={"data": query}, retries=2, timeout=(10, 90),
+                              backoff=10, deadline=deadline)
+        except FetchError as e:
+            errors.append(f"{url} → {e}")
+            log(f"  失敗：{e}")
+            continue
+        # Overpass 查詢超時時仍回傳 200，錯誤寫在 remark
+        remark = (result or {}).get("remark", "")
+        if "error" in remark.lower():
+            errors.append(f"{url} → {remark[:150]}")
+            log(f"  伺服器錯誤：{remark[:150]}")
+            continue
+        if result and result.get("elements"):
+            return result
+        errors.append(f"{url} → 沒有回傳資料")
+    raise FetchError("所有 Overpass 端點都失敗：" + "；".join(errors))
+
+
 def main():
     brands = config("brands.json")
-    query = build_query(brands)
-
-    result, last_error = None, None
-    for url in ENDPOINTS:
-        try:
-            result = get_json(url, data={"data": query}, timeout=120)
-            break
-        except RuntimeError as e:
-            last_error = e
-    if result is None:
-        raise RuntimeError(f"所有 Overpass 端點都失敗：{last_error}")
-
-    elements = result.get("elements", [])
-    if not elements:
-        raise RuntimeError("Overpass 沒有回傳資料，請檢查 area 條件")
+    result = fetch(build_query(brands), budget_from_env("OSM_BUDGET_MIN", 5))
 
     features = []
-    for el in elements:
+    for el in result["elements"]:
         tags = el.get("tags", {})
         if el["type"] == "node":
             lon, lat = el.get("lon"), el.get("lat")
@@ -87,7 +97,7 @@ def main():
 
     save_json(RAW / "osm" / "macau.geojson", {"type": "FeatureCollection", "features": features})
     stores = sum(f["properties"]["is_store"] for f in features)
-    print(f"共 {len(features)} 個地點，其中品牌門店 {stores} 間")
+    log(f"共 {len(features)} 個地點，其中品牌門店 {stores} 間")
 
 
 if __name__ == "__main__":
