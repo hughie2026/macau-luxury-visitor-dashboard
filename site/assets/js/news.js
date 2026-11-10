@@ -1,4 +1,4 @@
-import { $, renderNav, renderFooter, loadJSON, esc, safeUrl, TOPICS, debounce, showError } from './common.js';
+import { $, renderNav, renderFooter, loadJSON, esc, safeUrl, TOPICS, showError } from './common.js';
 
 renderNav('news.html');
 renderFooter();
@@ -6,6 +6,7 @@ renderFooter();
 const PAGE_SIZE = 50;
 const NO_TOPIC = '_none';
 const TOPIC_LABELS = { ...TOPICS, [NO_TOPIC]: '未分類' };
+const CHART_IDS = ['chart-topics', 'chart-keywords'];
 // GDELT 的 language 欄位是英文全名
 const LANGS = {
   English: '英語', Chinese: '中文', Japanese: '日語', Korean: '韓語', Thai: '泰語',
@@ -21,6 +22,7 @@ const STOPWORDS = new Set(`the and for with from that this these those are was w
 
 const state = { brand: '', country: '', lang: '', topic: '', q: '', page: 0 };
 const charts = {};
+const hasCharts = typeof window.echarts !== 'undefined';
 let articles = [];
 let brands = [];
 let brandTokens = new Set();
@@ -28,24 +30,54 @@ let filtered = [];
 
 init();
 
+function debounce(fn, ms = 250) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
+}
+
+const hint = (msg) => `<p class="hint">${esc(msg)}</p>`;
+
 async function init() {
   try {
     const [list, b] = await Promise.all([loadJSON('articles.json'), loadJSON('brands.json')]);
-    articles = list;
-    brands = b.brands;
+    articles = Array.isArray(list) ? list : [];
+    brands = b?.brands || [];
   } catch (e) {
     showError($('table-wrap'), e);
     return;
   }
-  brandTokens = new Set(brands.flatMap((b) =>
-    b.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/\s+/)));
 
-  const params = new URLSearchParams(location.search);
-  for (const k of ['brand', 'country', 'lang', 'topic', 'q']) state[k] = params.get(k) || '';
+  if (!hasCharts) {
+    CHART_IDS.forEach((id) => { $(id).innerHTML = hint('圖表庫（ECharts CDN）載入失敗，請重新整理頁面或檢查網絡。'); });
+  }
 
-  setupFilters();
-  render();
-  window.addEventListener('resize', () => Object.values(charts).forEach((c) => c.resize()));
+  if (!articles.length) {
+    $('count').textContent = '0 篇';
+    const msg = '還沒有文章數據：site/data/articles.json 是空的。' +
+      '請到 GitHub Actions 手動運行「Update data and deploy」並勾選 backfill，' +
+      '然後在 Fetch sources 日誌中確認出現「文章 N 篇」。只推送代碼不會抓取數據。';
+    $('table-wrap').innerHTML = hint(msg);
+    if (hasCharts) CHART_IDS.forEach((id) => { $(id).innerHTML = hint('沒有數據'); });
+    for (const id of ['f-brand', 'f-country', 'f-lang', 'f-topic', 'f-q', 'prev', 'next']) $(id).disabled = true;
+    return;
+  }
+
+  try {
+    brandTokens = new Set(brands.flatMap((b) =>
+      b.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/\s+/)));
+
+    const params = new URLSearchParams(location.search);
+    for (const k of ['brand', 'country', 'lang', 'topic', 'q']) state[k] = params.get(k) || '';
+
+    setupFilters();
+    render();
+    window.addEventListener('resize', () => Object.values(charts).forEach((c) => c.resize()));
+  } catch (e) {
+    showError($('table-wrap'), e);
+  }
 }
 
 // ---------- 篩選 ----------
@@ -108,9 +140,17 @@ function render() {
   filtered = articles.filter((a) => matches(a));
   $('count').textContent = `${filtered.length.toLocaleString('zh-Hant')} / ${articles.length.toLocaleString('zh-Hant')} 篇`;
   syncUrl();
-  renderTopics();
-  renderKeywords();
+  // 先畫表格，即使圖表出錯，文章列表也會顯示
   renderTable();
+  if (hasCharts) {
+    try {
+      renderTopics();
+      renderKeywords();
+    } catch (e) {
+      console.error(e);
+      CHART_IDS.forEach((id) => { $(id).innerHTML = hint(`圖表繪製失敗：${e.message}`); });
+    }
+  }
 }
 
 function syncUrl() {
@@ -202,7 +242,7 @@ function renderTable() {
   const brandName = Object.fromEntries(brands.map((b) => [b.id, b.name]));
 
   if (!rows.length) {
-    $('table-wrap').innerHTML = '<p class="hint">沒有符合條件的文章。</p>';
+    $('table-wrap').innerHTML = hint('沒有符合條件的文章。');
   } else {
     $('table-wrap').innerHTML = `<table>
       <thead><tr><th>日期</th><th>標題</th><th>來源</th><th>國家</th><th>語言</th><th>品牌</th><th>主題</th></tr></thead>
