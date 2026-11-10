@@ -1,1 +1,10 @@
-
+[
+  {"id": "border_gate",   "name_zh": "關閘",             "name_en": "Border Gate",                 "lon": 113.5495, "lat": 22.2155},
+  {"id": "qingmao",       "name_zh": "青茂口岸",          "name_en": "Qingmao Port",                "lon": 113.5440, "lat": 22.2158},
+  {"id": "hzmb",          "name_zh": "港珠澳大橋澳門口岸",  "name_en": "HZMB Macao Port",             "lon": 113.5800, "lat": 22.2050},
+  {"id": "outer_harbour", "name_zh": "外港客運碼頭",       "name_en": "Outer Harbour Ferry Terminal", "lon": 113.5590, "lat": 22.1970},
+  {"id": "inner_harbour", "name_zh": "內港客運碼頭",       "name_en": "Inner Harbour Ferry Terminal", "lon": 113.5370, "lat": 22.1965},
+  {"id": "taipa_ferry",   "name_zh": "氹仔客運碼頭",       "name_en": "Taipa Ferry Terminal",        "lon": 113.5750, "lat": 22.1640},
+  {"id": "airport",       "name_zh": "澳門國際機場",       "name_en": "Macau International Airport", "lon": 113.5920, "lat": 22.1500},
+  {"id": "hengqin",       "name_zh": "橫琴口岸",          "name_en": "Hengqin Port",                "lon": 113.5480, "lat": 22.1360}
+]
