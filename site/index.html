@@ -17,18 +17,20 @@
         <label>著色指標
           <select id="metric">
             <option value="news">新聞報道強度</option>
-            <option value="visitors">入境旅客人次</option>
-            <option value="spending">人均購物消費</option>
             <option value="tone">新聞平均情緒</option>
-            <option value="bivariate">雙變量：報道強度 × 人均購物</option>
+            <option value="visitors_year">年度入境旅客</option>
+            <option value="visitors">月度入境旅客（2026）</option>
+            <option value="spending">人均非博彩消費（按季）</option>
+            <option value="bivariate">雙變量：報道強度 × 人均非博彩消費</option>
           </select>
         </label>
         <label>品牌 <select id="brand"></select></label>
         <label class="check"><input type="checkbox" id="exclude-gc"> 排除中國內地、香港、台灣</label>
         <label class="check"><input type="checkbox" id="flows" checked> 顯示客流飛線</label>
+        <p id="flow-note" class="hint"></p>
       </section>
       <section>
-        <h2>時間：<span id="month-label">—</span></h2>
+        <h2><span id="period-name">時間</span>：<span id="month-label">—</span></h2>
         <input type="range" id="month" min="0" max="0" value="0">
         <button id="play" type="button">▶ 播放</button>
       </section>
