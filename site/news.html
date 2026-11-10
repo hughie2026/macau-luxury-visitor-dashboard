@@ -1,1 +1,46 @@
-
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>討論內容｜澳門奢侈品牌 × 國際旅客</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main class="page">
+    <section class="card filters">
+      <select id="f-brand"></select>
+      <select id="f-country"></select>
+      <select id="f-lang"></select>
+      <select id="f-topic"></select>
+      <input id="f-q" type="search" placeholder="搜尋標題">
+      <span id="count" class="hint"></span>
+    </section>
+    <div class="grid-2">
+      <section class="card">
+        <h2>主題分布</h2>
+        <p class="hint">按標題關鍵詞自動分類，一篇文章可屬多個主題。</p>
+        <div id="chart-topics" class="chart"></div>
+      </section>
+      <section class="card">
+        <h2>標題高頻詞</h2>
+        <p class="hint">只統計英文標題。</p>
+        <div id="chart-keywords" class="chart"></div>
+      </section>
+    </div>
+    <section class="card">
+      <h2>文章列表</h2>
+      <div id="table-wrap"></div>
+      <div class="pager">
+        <button id="prev" type="button">上一頁</button>
+        <span id="page-label"></span>
+        <button id="next" type="button">下一頁</button>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+  <script type="module" src="assets/js/news.js"></script>
+</body>
+</html>
