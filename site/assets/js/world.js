@@ -21,11 +21,15 @@ const METRIC_LABELS = {
   spending: '人均購物消費（澳門元，按季）',
   tone: '新聞平均情緒（全部品牌）',
 };
+const MAX_FLOWS = 30;
 
 const state = { metric: 'news', brand: 'all', monthIdx: 0, excludeGC: false, flows: true, selected: null, timer: null };
 const names = {};
 const centroids = {};
-let world, geo, map, ready = false, articles = null;
+let world, geo, map;
+let ready = false;
+let articlesPromise = null;
+let panelToken = 0;
 
 init();
 
@@ -95,11 +99,19 @@ async function init() {
 }
 
 function setupControls() {
+  const metricSel = $('metric');
   const brandSel = $('brand');
   brandSel.innerHTML = '<option value="all">全部品牌</option>' +
     world.brands.map((b) => `<option value="${esc(b.id)}">${esc(b.name)}（${esc(b.name_zh)}）</option>`).join('');
 
-  $('metric').onchange = (e) => {
+  // 瀏覽器重新整理時可能保留表單狀態，以畫面上的值為準
+  state.metric = metricSel.value;
+  state.brand = brandSel.value || 'all';
+  state.excludeGC = $('exclude-gc').checked;
+  state.flows = $('flows').checked;
+  brandSel.disabled = !['news', 'bivariate'].includes(state.metric);
+
+  metricSel.onchange = (e) => {
     state.metric = e.target.value;
     brandSel.disabled = !['news', 'bivariate'].includes(state.metric);
     update();
@@ -137,6 +149,7 @@ function togglePlay() {
 
 const currentMonth = () => world.months[state.monthIdx];
 const included = (iso) => iso !== 'MAC' && !(state.excludeGC && GREATER_CHINA.includes(iso));
+const featureCollection = (features) => ({ type: 'FeatureCollection', features });
 
 function valueOf(iso, metric, month) {
   const c = world.countries[iso];
@@ -194,4 +207,172 @@ function update() {
     rows.forEach(([i, a, b]) => { colors[i] = BIV[classify(a, bA)][classify(b, bB)]; });
     $('legend').innerHTML = bivariateLegend(rows.length);
   } else {
-    const rows = isos.
+    const rows = isos.map((i) => [i, valueOf(i, state.metric, month)]).filter(([, v]) => v != null);
+    if (state.metric === 'tone') {
+      rows.forEach(([i, v]) => { colors[i] = DIV[classify(v, TONE_BREAKS)]; });
+      $('legend').innerHTML = classLegend(DIV, TONE_BREAKS, 'tone', rows.length);
+    } else {
+      const breaks = quantileBreaks(rows.map((r) => r[1]), SEQ.length);
+      rows.forEach(([i, v]) => { colors[i] = SEQ[classify(v, breaks)]; });
+      $('legend').innerHTML = classLegend(SEQ, breaks, state.metric, rows.length);
+    }
+  }
+
+  map.removeFeatureState({ source: 'countries' });
+  for (const [iso, color] of Object.entries(colors)) {
+    if (names[iso]) map.setFeatureState({ source: 'countries', id: iso }, { color });
+  }
+  if (state.selected) map.setFeatureState({ source: 'countries', id: state.selected }, { selected: true });
+
+  map.getSource('flows').setData(buildFlows(month));
+  if (state.selected) renderPanel(state.selected);
+}
+
+// ---------- 圖例 ----------
+
+const legendRow = (color, label) =>
+  `<div class="legend-row"><span class="swatch" style="background:${color}"></span>${esc(label)}</div>`;
+const noDataRow = () => legendRow(NO_DATA, '無數據');
+
+function classLegend(colors, breaks, metric, n) {
+  const title = `<p class="hint">${esc(METRIC_LABELS[metric])}</p>`;
+  if (!n || breaks.length < colors.length - 1) {
+    return title + noDataRow() + '<p class="hint">本月沒有數據。</p>';
+  }
+  const f = (v) => formatValue(metric, v);
+  const rows = colors.map((c, i) => {
+    let label;
+    if (i === 0) label = `< ${f(breaks[0])}`;
+    else if (i === colors.length - 1) label = `≥ ${f(breaks[i - 1])}`;
+    else label = `${f(breaks[i - 1])} – ${f(breaks[i])}`;
+    return legendRow(c, label);
+  });
+  const note = metric === 'tone' ? '大於 0 偏正面，小於 0 偏負面' : '按五等分位分級';
+  return title + rows.join('') + noDataRow() + `<p class="hint">${n} 個國家／地區有數據，${note}。</p>`;
+}
+
+function bivariateLegend(n) {
+  let cells = '';
+  for (let r = 2; r >= 0; r--) {
+    for (let c = 0; c < 3; c++) cells += `<div style="background:${BIV[r][c]}"></div>`;
+  }
+  return `<div class="biv-wrap"><div>↑ 報道強度</div><div class="biv">${cells}</div>` +
+    '<div style="margin-left:28px">人均購物消費 →</div></div>' + noDataRow() +
+    `<p class="hint">${n} 個國家／地區兩項都有數據。左上：討論多、消費少；右下：討論少、消費多。</p>`;
+}
+
+// ---------- 客流飛線 ----------
+
+function buildFlows(month) {
+  if (!state.flows || !month) return featureCollection([]);
+  const rows = Object.keys(world.countries).filter(included)
+    .map((iso) => [iso, valueOf(iso, 'visitors', month)])
+    .filter(([iso, v]) => v > 0 && centroids[iso])
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_FLOWS);
+  if (!rows.length) return featureCollection([]);
+  const max = Math.sqrt(rows[0][1]);
+  return featureCollection(rows.map(([iso, v]) => ({
+    type: 'Feature',
+    properties: { iso3: iso, w: 1 + (9 * Math.sqrt(v)) / max },
+    geometry: { type: 'LineString', coordinates: arc(centroids[iso], MACAU) },
+  })));
+}
+
+// 二次貝茲曲線，向北彎曲；跨越 180° 經線時走較短的一邊
+function arc(from, to, steps = 48) {
+  let [x0, y0] = from;
+  const [x1, y1] = to;
+  if (x1 - x0 > 180) x0 += 360;
+  else if (x0 - x1 > 180) x0 -= 360;
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const k = 0.2 * (Math.sign(dx) || 1);
+  const cx = (x0 + x1) / 2 - dy * k;
+  const cy = Math.min((y0 + y1) / 2 + dx * k, 80);
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const a = (1 - t) ** 2, b = 2 * (1 - t) * t, c = t ** 2;
+    pts.push([a * x0 + b * cx + c * x1, a * y0 + b * cy + c * y1]);
+  }
+  return pts;
+}
+
+// ---------- 國家詳情 ----------
+
+function selectCountry(iso) {
+  if (state.selected) map.setFeatureState({ source: 'countries', id: state.selected }, { selected: false });
+  state.selected = iso;
+  map.setFeatureState({ source: 'countries', id: iso }, { selected: true });
+  renderPanel(iso);
+}
+
+function getArticles() {
+  articlesPromise ??= loadJSON('articles.json').catch((e) => { articlesPromise = null; throw e; });
+  return articlesPromise;
+}
+
+async function renderPanel(iso) {
+  const token = ++panelToken;
+  const c = world.countries[iso] || {};
+  const month = currentMonth();
+  const q = month ? quarterOf(month) : null;
+
+  let html = `<h2>${esc(names[iso] || iso)}</h2><p class="hint">${esc(month ?? '')}</p>
+    <dl>
+      <dt>入境旅客</dt><dd>${fmt.int(c.visitors?.[month])} 人次</dd>
+      <dt>人均購物（${esc(q ?? '—')}）</dt><dd>${fmt.int(c.spending?.[q])} 澳門元</dd>
+      <dt>新聞平均情緒</dt><dd>${fmt.num(c.tone?.[month], 2)}</dd>
+      <dt>報道強度（全部品牌）</dt><dd>${fmt.num(c.news?.all?.[month], 3)}</dd>
+    </dl>`;
+
+  const brandRows = world.brands
+    .map((b) => [b, c.news?.[b.id]?.[month]])
+    .filter(([, v]) => v != null && v > 0)
+    .sort((a, b) => b[1] - a[1]);
+  html += '<h2>各品牌報道強度</h2>' + (brandRows.length
+    ? '<dl>' + brandRows.map(([b, v]) => `<dt>${esc(b.name)}</dt><dd>${fmt.num(v, 3)}</dd>`).join('') + '</dl>'
+    : '<p class="hint">本月沒有品牌報道。</p>');
+
+  if (c.fx) {
+    const unit = c.fx.hkd_per_unit < 0.01 ? 1000 : c.fx.hkd_per_unit < 0.1 ? 100 : 1;
+    html += `<h2>匯率</h2><dl>
+      <dt>${unit} ${esc(c.fx.currency)}</dt><dd>${fmt.num(c.fx.hkd_per_unit * unit, 3)} 港幣</dd>
+      <dt>一年變化</dt><dd>${fmt.pct(c.fx.change_1y_pct)}</dd>
+    </dl><p class="hint">正值表示來澳門購物變便宜。比較 ${esc(c.fx.compare_date)} 與 ${esc(c.fx.date)}。</p>`;
+  }
+
+  if (c.wb) {
+    const wb = c.wb;
+    const year = (k) => (wb[k]?.year ? `（${esc(wb[k].year)}）` : '');
+    html += `<h2>經濟指標</h2><dl>
+      <dt>人均 GDP${year('gdp_pc')}</dt><dd>${fmt.int(wb.gdp_pc?.value)} 美元</dd>
+      <dt>出境旅遊支出${year('outbound_exp')}</dt><dd>${fmt.usd100m(wb.outbound_exp?.value)}</dd>
+      <dt>出境人次${year('departures')}</dt><dd>${fmt.wan(wb.departures?.value)}</dd>
+    </dl>`;
+  }
+
+  html += '<h2>代表新聞</h2><div id="panel-articles"><p class="hint">載入中…</p></div>';
+  $('panel').innerHTML = html;
+
+  try {
+    const list = await getArticles();
+    if (token !== panelToken) return;
+    const picks = list
+      .filter((a) => a.iso3 === iso && (state.brand === 'all' || a.brands?.includes(state.brand)))
+      .slice(0, 5);
+    if (!picks.length) {
+      $('panel-articles').innerHTML = '<p class="hint">沒有來自這個國家的文章。</p>';
+      return;
+    }
+    const params = new URLSearchParams({ country: picks[0].country });
+    if (state.brand !== 'all') params.set('brand', state.brand);
+    $('panel-articles').innerHTML = '<ul>' + picks.map((a) =>
+      `<li><a href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer">${esc(a.title || a.url)}</a>` +
+      `<br><span class="hint">${esc(a.date)}｜${esc(a.domain)}</span></li>`).join('') + '</ul>' +
+      `<p><a href="news.html?${esc(params.toString())}">查看全部文章 →</a></p>`;
+  } catch (e) {
+    if (token === panelToken) showError($('panel-articles'), e);
+  }
+}
