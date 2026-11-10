@@ -17,7 +17,7 @@ const TOGGLES = [
   { id: 'stores', label: '品牌門店', color: '#374151' },
 ];
 
-const state = { brand: 'all', month: null };
+const state = { brand: 'all', year: null };
 const brandInfo = {};
 const nearCache = new Map();
 let places, portsData, map;
@@ -142,16 +142,16 @@ function setupControls() {
     renderStoreList();
   };
 
-  const monthSel = $('port-month');
-  const months = [...portsData.months].reverse();
-  if (!months.length) {
-    monthSel.innerHTML = '<option>尚無數據</option>';
-    monthSel.disabled = true;
+  const yearSel = $('port-year');
+  const years = [...(portsData.years || [])].reverse();
+  if (!years.length) {
+    yearSel.innerHTML = '<option>尚無數據</option>';
+    yearSel.disabled = true;
   } else {
-    monthSel.innerHTML = months.map((m) => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
-    state.month = months[0];
-    monthSel.onchange = (e) => {
-      state.month = e.target.value;
+    yearSel.innerHTML = years.map((y) => `<option value="${esc(y)}">${esc(y)}</option>`).join('');
+    state.year = years[0];
+    yearSel.onchange = (e) => {
+      state.year = e.target.value;
       if (ready) map.getSource('ports').setData(portsGeoJSON());
       popup.remove();
     };
@@ -253,16 +253,16 @@ function placeHTML(p, coords) {
 
 function portHTML(p) {
   let html = `<strong>${esc(p.name_zh)}</strong><br><span class="hint">${esc(p.name_en)}</span><br>`;
-  if (!state.month) return html + '尚無口岸旅客數據';
-  if (!p.has_data) return html + `${esc(state.month)}：沒有數據`;
-  const share = portTotal ? `（佔 ${fmt.num((p.visitors / portTotal) * 100, 1)}%）` : '';
-  return html + `${esc(state.month)} 入境旅客：${fmt.int(p.visitors)} 人次${share}`;
+  if (!state.year) return html + '尚無口岸旅客數據';
+  if (!p.has_data) return html + `${esc(state.year)} 年：沒有這個口岸的數據`;
+  const share = portTotal ? `（佔有數據口岸合計的 ${fmt.num((p.visitors / portTotal) * 100, 1)}%）` : '';
+  return html + `${esc(state.year)} 年入境旅客：${fmt.int(p.visitors)} 人次${share}`;
 }
 
 // ---------- 口岸 ----------
 
 function portsGeoJSON() {
-  const vals = portsData.ports.map((p) => portsData.arrivals[p.id]?.[state.month] ?? null);
+  const vals = portsData.ports.map((p) => portsData.arrivals[p.id]?.[state.year] ?? null);
   const present = vals.filter((v) => v != null);
   const max = Math.max(0, ...present);
   portTotal = present.reduce((a, b) => a + b, 0);
