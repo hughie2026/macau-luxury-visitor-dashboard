@@ -16,6 +16,14 @@ TOPIC_WORDS = {
     "earnings": ["sales", "revenue", "earnings", "profit", "業績", "營收"],
 }
 
+YEAR = r"\d{4}"
+MONTH = r"\d{4}-\d{2}"
+QUARTER = r"\d{4}Q[1-4]"
+ISO3 = r"[A-Z]{3}"
+INT = r"[\d,]+"
+DEC = r"[\d,]+(\.\d+)?"
+OVERALL_METRICS = ["per_capita_shopping", "per_capita_total_non_gaming", "shopping_share_of_total"]
+
 
 def monthly(daily, digits=4):
     buckets = defaultdict(list)
@@ -30,12 +38,19 @@ def number(s):
 
 
 def read_csv(name, patterns):
+    """讀取 data/manual 的 CSV，只檢查 patterns 中的欄位，多出的欄位（例如 source_url）會保留但不檢查。"""
     path = MANUAL / name
     if not path.exists():
+        print(f"提示：沒有 {name}，略過")
         return []
-    rows = []
+    rows, seen = [], set()
     with path.open(encoding="utf-8-sig", newline="") as f:
-        for line_no, row in enumerate(csv.DictReader(f), start=2):
+        reader = csv.DictReader(f)
+        missing = [k for k in patterns if k not in (reader.fieldnames or [])]
+        if missing:
+            print(f"警告：{name} 缺少欄位 {', '.join(missing)}，整個檔案略過")
+            return []
+        for line_no, row in enumerate(reader, start=2):
             row = {k.strip(): (v or "").strip() for k, v in row.items() if k}
             if not any(row.values()):
                 continue
@@ -43,7 +58,12 @@ def read_csv(name, patterns):
             if bad:
                 print(f"警告：{name} 第 {line_no} 行欄位格式錯誤（{', '.join(bad)}），已略過")
                 continue
+            key = tuple(row[k] for k in list(patterns)[:-1])
+            if key in seen:
+                print(f"警告：{name} 第 {line_no} 行重複（{', '.join(key)}），以最後一行為準")
+            seen.add(key)
             rows.append(row)
+    print(f"{name}：{len(rows)} 行")
     return rows
 
 
@@ -55,22 +75,40 @@ def topics_of(title):
 def build_world(brands, settings, geo_isos):
     countries = defaultdict(dict)
 
+    news_months, tone_months = set(), set()
     for bid, per_iso in load_json(RAW / "gdelt" / "country_volume.json", {}).items():
         for iso, daily in per_iso.items():
-            countries[iso].setdefault("news", {})[bid] = monthly(daily)
+            series = monthly(daily)
+            countries[iso].setdefault("news", {})[bid] = series
+            news_months.update(series)
 
     for iso, daily in load_json(RAW / "gdelt" / "market_tone.json", {}).items():
-        countries[iso]["tone"] = monthly(daily, 3)
+        series = monthly(daily, 3)
+        countries[iso]["tone"] = series
+        tone_months.update(series)
 
-    for r in read_csv("visitors_by_origin.csv",
-                      {"month": r"\d{4}-\d{2}", "iso3": r"[A-Z]{3}", "visitors": r"[\d,]+"}):
+    for r in read_csv("visitors_by_origin.csv", {"month": MONTH, "iso3": ISO3, "visitors": INT}):
         countries[r["iso3"]].setdefault("visitors", {})[r["month"]] = int(number(r["visitors"]))
 
+    for r in read_csv("visitors_by_origin_annual.csv", {"year": YEAR, "iso3": ISO3, "visitors": INT}):
+        countries[r["iso3"]].setdefault("visitors_year", {})[r["year"]] = int(number(r["visitors"]))
+
     for r in read_csv("spending_by_origin.csv",
-                      {"quarter": r"\d{4}Q[1-4]", "iso3": r"[A-Z]{3}",
-                       "per_capita_shopping_mop": r"[\d,]+(\.\d+)?"}):
+                      {"quarter": QUARTER, "iso3": ISO3, "per_capita_non_gaming_mop": DEC}):
         countries[r["iso3"]].setdefault("spending", {})[r["quarter"]] = round(
-            number(r["per_capita_shopping_mop"]), 1)
+            number(r["per_capita_non_gaming_mop"]), 1)
+
+    totals = {}
+    for r in read_csv("visitors_total.csv", {"period": rf"{YEAR}(-\d{{2}})?", "visitors": INT}):
+        totals[r["period"]] = int(number(r["visitors"]))
+
+    overall = defaultdict(dict)
+    for r in read_csv("spending_overall.csv", {
+        "period": rf"{YEAR}(Q[1-4])?",
+        "metric": "(?:" + "|".join(OVERALL_METRICS) + ")",
+        "value": DEC,
+    }):
+        overall[r["metric"]][r["period"]] = number(r["value"])
 
     fx = load_json(RAW / "fx.json", {}).get("currencies", {})
     for cur, isos in settings["currencies"].items():
@@ -82,16 +120,21 @@ def build_world(brands, settings, geo_isos):
         if iso in geo_isos:
             countries[iso]["wb"] = indicators
 
-    months = set()
-    for c in countries.values():
-        for series in c.get("news", {}).values():
-            months.update(series)
-        months.update(c.get("tone", {}))
-        months.update(c.get("visitors", {}))
+    def periods_of(field):
+        return sorted({p for c in countries.values() for p in c.get(field, {})})
 
     return {
         "brands": [{"id": b["id"], "name": b["name"], "name_zh": b["name_zh"]} for b in brands],
-        "months": sorted(months),
+        "months": sorted(news_months | tone_months),
+        "periods": {
+            "news": sorted(news_months),
+            "tone": sorted(tone_months),
+            "visitors": periods_of("visitors"),
+            "visitors_year": periods_of("visitors_year"),
+            "spending": periods_of("spending"),
+        },
+        "totals": totals,
+        "spending_overall": dict(overall),
         "countries": dict(countries),
     }
 
@@ -123,12 +166,16 @@ def build_articles(settings):
 
 
 def build_ports():
+    ports = config("ports.json")
+    known = {p["id"] for p in ports}
     arrivals = defaultdict(dict)
-    for r in read_csv("arrivals_by_port.csv",
-                      {"month": r"\d{4}-\d{2}", "port_id": r"[a-z_]+", "visitors": r"[\d,]+"}):
-        arrivals[r["port_id"]][r["month"]] = int(number(r["visitors"]))
-    months = sorted({m for v in arrivals.values() for m in v})
-    return {"ports": config("ports.json"), "arrivals": dict(arrivals), "months": months}
+    for r in read_csv("arrivals_by_port.csv", {"year": YEAR, "port_id": r"[a-z_]+", "visitors": INT}):
+        if r["port_id"] not in known:
+            print(f"警告：arrivals_by_port.csv 的 port_id「{r['port_id']}」不在 config/ports.json，已略過")
+            continue
+        arrivals[r["port_id"]][r["year"]] = int(number(r["visitors"]))
+    years = sorted({y for v in arrivals.values() for y in v})
+    return {"ports": ports, "arrivals": dict(arrivals), "years": years}
 
 
 def main():
@@ -152,7 +199,10 @@ def main():
         "articles": len(articles),
         "places": len(macau["features"]),
     }, pretty=True)
-    print(f"完成：{len(world['months'])} 個月份，{len(articles)} 篇文章，{len(macau['features'])} 個澳門地點")
+    p = world["periods"]
+    print(f"完成：新聞 {len(p['news'])} 個月，年度旅客 {len(p['visitors_year'])} 年，"
+          f"月度旅客 {len(p['visitors'])} 個月，消費 {len(p['spending'])} 季，"
+          f"{len(articles)} 篇文章，{len(macau['features'])} 個澳門地點")
 
 
 if __name__ == "__main__":
