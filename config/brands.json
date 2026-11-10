@@ -1,1 +1,9 @@
-
+[
+  {"id": "louis-vuitton", "name": "Louis Vuitton", "name_zh": "路易威登", "gdelt": "\"Louis Vuitton\"", "wiki_en": "Louis Vuitton", "osm": ["Louis Vuitton"]},
+  {"id": "chanel", "name": "Chanel", "name_zh": "香奈兒", "gdelt": "Chanel", "wiki_en": "Chanel", "osm": ["Chanel"]},
+  {"id": "hermes", "name": "Hermès", "name_zh": "愛馬仕", "gdelt": "Hermes", "wiki_en": "Hermès", "osm": ["Hermès", "Hermes"]},
+  {"id": "dior", "name": "Dior", "name_zh": "迪奧", "gdelt": "Dior", "wiki_en": "Dior", "osm": ["Dior"]},
+  {"id": "gucci", "name": "Gucci", "name_zh": "古馳", "gdelt": "Gucci", "wiki_en": "Gucci", "osm": ["Gucci"]},
+  {"id": "cartier", "name": "Cartier", "name_zh": "卡地亞", "gdelt": "Cartier", "wiki_en": "Cartier (jeweler)", "osm": ["Cartier"]},
+  {"id": "rolex", "name": "Rolex", "name_zh": "勞力士", "gdelt": "Rolex", "wiki_en": "Rolex", "osm": ["Rolex"]}
+]
