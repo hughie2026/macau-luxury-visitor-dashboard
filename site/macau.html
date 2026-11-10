@@ -1,1 +1,35 @@
-
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>澳門地圖｜澳門奢侈品牌 × 國際旅客</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main class="map-layout">
+    <aside class="sidebar">
+      <section>
+        <h2>圖層</h2>
+        <div id="layer-toggles"></div>
+        <label>品牌門店 <select id="brand"></select></label>
+      </section>
+      <section>
+        <h2>口岸旅客量</h2>
+        <label>月份 <select id="port-month"></select></label>
+        <p class="hint">圓圈大小代表該月經該口岸入境的旅客人次。</p>
+      </section>
+      <section>
+        <h2>門店列表</h2>
+        <div id="store-list"></div>
+      </section>
+    </aside>
+    <div id="map" class="map"></div>
+  </main>
+  <footer id="footer"></footer>
+  <script type="module" src="assets/js/macau.js"></script>
+</body>
+</html>
