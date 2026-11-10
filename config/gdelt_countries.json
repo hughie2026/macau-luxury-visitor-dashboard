@@ -1,1 +1,16 @@
-
+{
+  "United States": "USA", "United Kingdom": "GBR", "China": "CHN", "Hong Kong": "HKG",
+  "Taiwan": "TWN", "Macau": "MAC", "Macao": "MAC", "Japan": "JPN",
+  "South Korea": "KOR", "Korea, South": "KOR", "North Korea": "PRK",
+  "Singapore": "SGP", "Malaysia": "MYS", "Thailand": "THA", "Philippines": "PHL",
+  "Indonesia": "IDN", "Vietnam": "VNM", "Cambodia": "KHM", "Burma": "MMR", "Myanmar": "MMR",
+  "Laos": "LAO", "India": "IND", "Pakistan": "PAK", "Bangladesh": "BGD", "Sri Lanka": "LKA",
+  "Nepal": "NPL", "Australia": "AUS", "New Zealand": "NZL", "Canada": "CAN", "Mexico": "MEX",
+  "Brazil": "BRA", "Argentina": "ARG", "Chile": "CHL", "Colombia": "COL",
+  "France": "FRA", "Germany": "DEU", "Italy": "ITA", "Spain": "ESP", "Portugal": "PRT",
+  "Switzerland": "CHE", "Netherlands": "NLD", "Belgium": "BEL", "Austria": "AUT",
+  "Ireland": "IRL", "Sweden": "SWE", "Norway": "NOR", "Denmark": "DNK", "Finland": "FIN",
+  "Poland": "POL", "Greece": "GRC", "Russia": "RUS", "Turkey": "TUR", "Israel": "ISR",
+  "United Arab Emirates": "ARE", "Saudi Arabia": "SAU", "Qatar": "QAT", "Egypt": "EGY",
+  "South Africa": "ZAF", "Nigeria": "NGA", "Kenya": "KEN"
+}
