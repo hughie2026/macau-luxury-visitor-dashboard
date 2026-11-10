@@ -1,6 +1,7 @@
 """把 data/raw 和 data/manual 整理成前端用的 JSON，輸出到 site/data/。"""
 import csv
 import re
+import unicodedata
 from collections import defaultdict
 from datetime import datetime, timezone
 from statistics import mean
@@ -8,12 +9,22 @@ from statistics import mean
 from common import MANUAL, RAW, SITE_DATA, config, load_json, save_json
 
 TOPIC_WORDS = {
-    "duty_free": ["duty free", "duty-free", "tax free", "tax-free", "免稅"],
-    "opening": ["opening", "opens", "launch", "flagship", "boutique", "pop-up", "開業", "開幕", "旗艦"],
-    "price": ["price", "pricing", "expensive", "discount", "價格", "漲價"],
-    "policy": ["visa", "policy", "border", "tourism", "tourist", "簽證", "政策", "通關", "旅客"],
-    "gaming": ["casino", "gaming", "resort", "integrated resort", "博彩", "娛樂場", "度假村"],
-    "earnings": ["sales", "revenue", "earnings", "profit", "業績", "營收"],
+    "duty_free": ["duty free", "duty-free", "tax free", "tax-free", "免稅", "免税", "면세", "ปลอดภาษี", "bebas bea"],
+    "opening": ["opening", "opens", "launch", "flagship", "boutique", "pop-up", "popup",
+                "開業", "開幕", "旗艦", "開店", "开业", "开幕", "旗舰", "オープン", "출점", "오픈", "เปิดตัว"],
+    "price": ["price", "pricing", "expensive", "discount", "價格", "漲價", "价格", "涨价",
+              "値上げ", "価格", "가격", "인상", "ราคา"],
+    "policy": ["visa", "policy", "border", "tourism", "tourist", "簽證", "政策", "通關", "旅客",
+               "签证", "通关", "旅游", "観光", "ビザ", "관광", "비자", "นักท่องเที่ยว"],
+    "gaming": ["casino", "gaming", "resort", "integrated resort", "博彩", "娛樂場", "度假村",
+               "赌场", "カジノ", "카지노", "คาสิโน"],
+    "earnings": ["sales", "revenue", "earnings", "profit", "業績", "營收", "业绩", "营收",
+                 "売上", "決算", "매출", "실적", "ยอดขาย"],
+}
+GDELT_LANG = {
+    "English": "en", "Chinese": "zh", "Japanese": "ja", "Korean": "ko", "Thai": "th",
+    "Vietnamese": "vi", "Indonesian": "id", "Malay": "ms", "Tagalog": "tl", "French": "fr",
+    "German": "de", "Spanish": "es", "Portuguese": "pt", "Italian": "it", "Russian": "ru", "Arabic": "ar",
 }
 
 YEAR = r"\d{4}"
@@ -156,13 +167,79 @@ def build_brands(brands, settings):
     }
 
 
-def build_articles(settings):
+def norm_title(t):
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", t)).strip().lower()
+
+
+def build_news(brands, settings, geo_names):
+    """合併 GDELT 和 Google News 的文章，按標題 + 媒體去重。"""
     country_map = config("gdelt_countries.json")
-    out = []
+    brand_ids = {b["id"] for b in brands}
+    merged = {}
+
+    def add(rec, provider):
+        key = norm_title(rec["title"])[:200] + "|" + rec["domain"]
+        cur = merged.get(key)
+        if cur is None:
+            rec["providers"] = [provider]
+            rec["topics"] = topics_of(rec["title"])
+            merged[key] = rec
+            return
+        for field in ("markets", "brands"):
+            cur[field] = sorted(set(cur[field]) | set(rec[field]))
+        if provider not in cur["providers"]:
+            cur["providers"].append(provider)
+        if not cur.get("iso3") and rec.get("iso3"):
+            cur["iso3"], cur["country"] = rec["iso3"], rec["country"]
+        cur["date"] = min(cur["date"], rec["date"])
+
     for a in load_json(RAW / "gdelt" / "articles.json", []):
-        out.append({**a, "iso3": country_map.get(a.get("country", "")), "topics": topics_of(a.get("title", ""))})
-    out.sort(key=lambda a: a["date"], reverse=True)
-    return out[: settings["articles_publish"]]
+        if not a.get("title") or not a.get("date"):
+            continue
+        iso3 = country_map.get(a.get("country", ""))
+        lang = a.get("lang") or ""
+        add({
+            "title": a["title"], "url": a["url"], "date": a["date"],
+            "domain": a.get("domain", ""), "source": a.get("domain", ""),
+            "lang": GDELT_LANG.get(lang, lang[:2].lower()),
+            "country": a.get("country", ""), "iso3": iso3,
+            "markets": [iso3] if iso3 else [],
+            "brands": [b for b in a.get("brands", []) if b in brand_ids],
+        }, "gdelt")
+
+    for a in load_json(RAW / "news" / "gnews.json", []):
+        if not a.get("title") or not a.get("date"):
+            continue
+        markets = list(a.get("markets", []))
+        first = markets[0] if markets else None
+        add({
+            "title": a["title"], "url": a["url"], "date": a["date"],
+            "domain": a.get("domain", ""), "source": a.get("source") or a.get("domain", ""),
+            "lang": a.get("lang", ""),
+            "country": first or "", "iso3": first,
+            "markets": markets,
+            "brands": [b for b in a.get("brands", []) if b in brand_ids],
+        }, "gnews")
+
+    out = sorted(merged.values(), key=lambda a: a["date"], reverse=True)[: settings["articles_publish"]]
+
+    providers = defaultdict(int)
+    for a in out:
+        for p in a["providers"]:
+            providers[p] += 1
+
+    names = {m["iso3"]: m["name_zh"] for m in settings.get("news_markets", [])}
+    for a in out:
+        for iso in a["markets"]:
+            names.setdefault(iso, geo_names.get(iso, iso))
+
+    payload = {
+        "brands": [{"id": b["id"], "name": b["name"], "name_zh": b["name_zh"]} for b in brands],
+        "market_names": names,
+        "providers": dict(providers),
+        "articles": out,
+    }
+    return out, payload
 
 
 def build_ports():
@@ -183,18 +260,22 @@ def main():
     settings = config("settings.json")
     geo = load_json(SITE_DATA / "countries.geojson", {"features": []})
     geo_isos = {f["properties"]["iso3"] for f in geo["features"]}
+    geo_names = {f["properties"]["iso3"]: f["properties"].get("name_zh") or f["properties"].get("name")
+                 for f in geo["features"]}
+    updated = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     world = build_world(brands, settings, geo_isos)
-    articles = build_articles(settings)
+    articles, news = build_news(brands, settings, geo_names)
     macau = load_json(RAW / "osm" / "macau.geojson", {"type": "FeatureCollection", "features": []})
 
     save_json(SITE_DATA / "world.json", world)
     save_json(SITE_DATA / "brands.json", build_brands(brands, settings))
     save_json(SITE_DATA / "articles.json", articles)
+    save_json(SITE_DATA / "news.json", {**news, "updated": updated})
     save_json(SITE_DATA / "ports.json", build_ports())
     save_json(SITE_DATA / "macau.geojson", macau)
     save_json(SITE_DATA / "meta.json", {
-        "updated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "updated": updated,
         "months": [world["months"][0], world["months"][-1]] if world["months"] else [],
         "articles": len(articles),
         "places": len(macau["features"]),
@@ -202,7 +283,7 @@ def main():
     p = world["periods"]
     print(f"完成：新聞 {len(p['news'])} 個月，年度旅客 {len(p['visitors_year'])} 年，"
           f"月度旅客 {len(p['visitors'])} 個月，消費 {len(p['spending'])} 季，"
-          f"{len(articles)} 篇文章，{len(macau['features'])} 個澳門地點")
+          f"文章 {len(articles)} 篇（{dict(news['providers'])}），{len(macau['features'])} 個澳門地點")
 
 
 if __name__ == "__main__":
