@@ -2,154 +2,154 @@
   "base": "HKD",
   "currencies": {
     "AUD": {
-      "change_1y_pct": 5.25,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 5.350741
+      "change_1y_pct": 4.49,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 5.32368
     },
     "BRL": {
-      "change_1y_pct": -5.31,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 1.396629
+      "change_1y_pct": -5.82,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 1.38531
     },
     "CAD": {
-      "change_1y_pct": -0.75,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 5.505698
+      "change_1y_pct": -0.83,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 5.502972
     },
     "CHF": {
-      "change_1y_pct": -3.17,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 9.416196
+      "change_1y_pct": -4.19,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 9.358039
     },
     "CNY": {
-      "change_1y_pct": 7.73,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 1.176429
+      "change_1y_pct": 7.39,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 1.175973
     },
     "DKK": {
-      "change_1y_pct": -3.47,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 1.162858
+      "change_1y_pct": -4.06,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 1.159958
     },
     "EUR": {
-      "change_1y_pct": -3.37,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 8.692629
+      "change_1y_pct": -3.95,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 8.671523
     },
     "GBP": {
-      "change_1y_pct": 1.99,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 10.398686
+      "change_1y_pct": 1.36,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 10.377535
     },
     "IDR": {
-      "change_1y_pct": -7.31,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
+      "change_1y_pct": -7.52,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
       "hkd_per_unit": 0.00043
     },
     "ILS": {
-      "change_1y_pct": 0.75,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 2.449
+      "change_1y_pct": 0.98,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 2.443673
     },
     "INR": {
-      "change_1y_pct": -4.89,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.083416
+      "change_1y_pct": -4.98,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.083251
     },
     "JPY": {
-      "change_1y_pct": -2.15,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.049123
+      "change_1y_pct": -2.47,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.049039
     },
     "KRW": {
-      "change_1y_pct": 10.92,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.00588
+      "change_1y_pct": 10.51,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.005868
     },
     "MXN": {
-      "change_1y_pct": -1.26,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.419727
+      "change_1y_pct": -0.8,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.421994
     },
     "MYR": {
-      "change_1y_pct": 2.38,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 1.923447
+      "change_1y_pct": 1.99,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 1.919496
     },
     "NOK": {
-      "change_1y_pct": 6.58,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.822978
+      "change_1y_pct": 6.08,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.820412
     },
     "NZD": {
-      "change_1y_pct": -0.99,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 4.359008
+      "change_1y_pct": -1.41,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 4.340466
     },
     "PHP": {
-      "change_1y_pct": -6.3,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.1231
+      "change_1y_pct": -6.83,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.122953
     },
     "PLN": {
-      "change_1y_pct": -7.33,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 1.971687
+      "change_1y_pct": -7.95,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 1.965718
     },
     "SEK": {
-      "change_1y_pct": -4.44,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.785793
+      "change_1y_pct": -5.4,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.780701
     },
     "SGD": {
-      "change_1y_pct": 2.27,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 6.100537
+      "change_1y_pct": 1.93,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 6.091247
     },
     "THB": {
-      "change_1y_pct": -3.11,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.231992
+      "change_1y_pct": -3.81,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.231342
     },
     "TRY": {
-      "change_1y_pct": -15.15,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.156089
+      "change_1y_pct": -15.3,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.155773
     },
     "USD": {
-      "change_1y_pct": 0.95,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 7.844983
+      "change_1y_pct": 0.97,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 7.846214
     },
     "ZAR": {
-      "change_1y_pct": 2.95,
-      "compare_date": "2025-11-12",
-      "date": "2026-11-12",
-      "hkd_per_unit": 0.469329
+      "change_1y_pct": 1.2,
+      "compare_date": "2025-11-13",
+      "date": "2026-11-13",
+      "hkd_per_unit": 0.462513
     }
   }
 }
